@@ -1,0 +1,63 @@
+{
+  "name": "11-tenant-prefix",
+  "_notes": "多租户场景：每张表都有 tenant_code，但它是 string scope 列，不应当被推为指向独立 tenant 表的 FK（除非也存在 tenant 表）。这里没 tenant 表，因此不应产任何候选。",
+  "snapshot": {
+    "dialect": "postgres",
+    "database": "biz",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "goods",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigserial",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "tenant_code",
+            "nativeType": "varchar(32)",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false
+          },
+          {
+            "name": "name",
+            "nativeType": "text",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "order",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigserial",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "tenant_code",
+            "nativeType": "varchar(32)",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": []
+}

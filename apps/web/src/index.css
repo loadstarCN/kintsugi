@@ -1,0 +1,1474 @@
+/* Kintsugi · 锦缮  全局样式
+   配套 src/theme.ts 使用；只放无法通过 antd theme.token 表达的细节。 */
+
+:root {
+  --kintsugi-ink: #0f172a;
+  --kintsugi-paper: #fafaf7;
+  --kintsugi-paper-warm: #f5f1e8;
+  --kintsugi-rule: #e5e7eb;
+  --kintsugi-rule-soft: #eeece4;
+  --kintsugi-gold: #a07b3f;
+  --kintsugi-gold-soft: #c8a96a;
+  --kintsugi-muted: #64748b;
+  --kintsugi-mono:
+    "JetBrains Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --kintsugi-serif:
+    "Iowan Old Style", "Apple Garamond", "EB Garamond", "Baskerville", Georgia,
+    "Songti SC", "STSong", "宋体", serif;
+  --kintsugi-blue: #1677ff;
+  --kintsugi-ok: #16a34a;
+  --kintsugi-warn: #d97706;
+  --kintsugi-fail: #b91c1c;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--kintsugi-paper);
+  color: var(--kintsugi-ink);
+  font-feature-settings: "ss01", "cv11", "tnum";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 选区色：哑金 18% */
+::selection {
+  background: rgba(160, 123, 63, 0.22);
+  color: var(--kintsugi-ink);
+}
+
+/* 滚动条：低存在感 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.14);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(160, 123, 63, 0.4);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+/* 顶栏 —— 纸白 + 底部"金缮"线 */
+.kintsugi-header {
+  background: #ffffff !important;
+  position: relative;
+  border-bottom: 1px solid var(--kintsugi-rule-soft);
+}
+.kintsugi-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(160, 123, 63, 0.5) 22%,
+    rgba(200, 169, 106, 0.85) 50%,
+    rgba(160, 123, 63, 0.5) 78%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* 侧栏 —— 纸白 + 右细线 */
+.kintsugi-sider {
+  background: #ffffff !important;
+  border-right: 1px solid var(--kintsugi-rule-soft);
+}
+
+/* 侧栏分组标题：caps + 间距，呼应 mono 标签 */
+.kintsugi-sider .ant-menu-item-group-title,
+.kintsugi-mobile-drawer .ant-menu-item-group-title {
+  padding: 24px 24px 8px !important;
+  font-family: var(--kintsugi-mono);
+  font-size: 10px !important;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #94a3b8 !important;
+}
+
+/* 侧栏选中态左侧加哑金条 */
+.kintsugi-sider .ant-menu-light.ant-menu-inline .ant-menu-item,
+.kintsugi-mobile-drawer .ant-menu-light.ant-menu-inline .ant-menu-item {
+  position: relative;
+}
+.kintsugi-sider .ant-menu-light.ant-menu-inline .ant-menu-item-selected::before,
+.kintsugi-mobile-drawer .ant-menu-light.ant-menu-inline .ant-menu-item-selected::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--kintsugi-gold);
+}
+.kintsugi-sider .ant-menu-light.ant-menu-inline .ant-menu-item a,
+.kintsugi-sider .ant-menu-light.ant-menu-inline .ant-menu-item-selected a,
+.kintsugi-mobile-drawer .ant-menu-light.ant-menu-inline .ant-menu-item a,
+.kintsugi-mobile-drawer .ant-menu-light.ant-menu-inline .ant-menu-item-selected a {
+  color: inherit !important;
+}
+
+/* 主内容区取消默认白卡（让首页/全屏页能完整自定义） */
+.kintsugi-content {
+  padding: 0 !important;
+  background: var(--kintsugi-paper) !important;
+}
+
+/* 卡片 hover 上浮 */
+.kintsugi-card-hover {
+  transition: transform 160ms ease, box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+.kintsugi-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: var(--kintsugi-gold) !important;
+  box-shadow: 0 8px 24px rgba(160, 123, 63, 0.1),
+    0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+/* 入场动画：锦缮 fade-up */
+@keyframes kintsugi-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.kintsugi-fade-up {
+  animation: kintsugi-fade-up 360ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* 选中行颜色 */
+.ant-table-tbody > tr:hover > td {
+  background: var(--kintsugi-paper-warm) !important;
+}
+
+/* =========================================================
+   Button —— 全部按钮统一到墨/纸/哑金
+   ========================================================= */
+
+/* 默认 Primary：墨黑底，hover 转哑金 */
+.ant-btn.ant-btn-primary:not(.ant-btn-dangerous) {
+  background: var(--kintsugi-ink);
+  border-color: var(--kintsugi-ink);
+  color: #fff;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.05);
+  transition: background-color 160ms ease, border-color 160ms ease,
+    color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.ant-btn.ant-btn-primary:not(.ant-btn-dangerous):not(:disabled):hover {
+  background: var(--kintsugi-gold) !important;
+  border-color: var(--kintsugi-gold) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 16px rgba(160, 123, 63, 0.22) !important;
+}
+.ant-btn.ant-btn-primary:not(.ant-btn-dangerous):not(:disabled):active {
+  background: #8a6932 !important;
+  border-color: #8a6932 !important;
+  box-shadow: 0 2px 4px rgba(160, 123, 63, 0.18) !important;
+}
+.ant-btn.ant-btn-primary:disabled {
+  background: var(--kintsugi-rule) !important;
+  border-color: var(--kintsugi-rule) !important;
+  color: var(--kintsugi-mutedSoft, #94a3b8) !important;
+}
+
+/* Primary 大尺寸：caps mono 字，作为页面主操作按钮 */
+.ant-btn-lg.ant-btn-primary {
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+
+/* Default：纸白底细边，hover 哑金边 + 暖纸底 */
+.ant-btn-default:not(.ant-btn-dangerous) {
+  background: #fff;
+  border-color: var(--kintsugi-rule);
+  color: var(--kintsugi-ink);
+  transition: background-color 160ms ease, border-color 160ms ease,
+    color 160ms ease, box-shadow 160ms ease;
+}
+.ant-btn-default:not(.ant-btn-dangerous):not(:disabled):hover {
+  background: var(--kintsugi-paper-warm) !important;
+  border-color: var(--kintsugi-gold-soft) !important;
+  color: var(--kintsugi-ink) !important;
+}
+.ant-btn-default:not(.ant-btn-dangerous):not(:disabled):active {
+  border-color: var(--kintsugi-gold) !important;
+  color: var(--kintsugi-ink) !important;
+}
+
+/* Danger Primary：保留红色但匹配圆角/动效 */
+.ant-btn.ant-btn-primary.ant-btn-dangerous {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+.ant-btn.ant-btn-primary.ant-btn-dangerous:not(:disabled):hover {
+  background: #991b1b !important;
+  border-color: #991b1b !important;
+}
+
+/* Danger Default */
+.ant-btn-default.ant-btn-dangerous {
+  border-color: rgba(185, 28, 28, 0.32);
+  color: #b91c1c;
+  background: #fff;
+}
+.ant-btn-default.ant-btn-dangerous:not(:disabled):hover {
+  background: #fef2f2 !important;
+  border-color: #b91c1c !important;
+  color: #b91c1c !important;
+}
+
+/* Text：墨字 hover 哑金 */
+.ant-btn-text {
+  color: var(--kintsugi-ink);
+}
+.ant-btn-text:not(:disabled):hover {
+  background: var(--kintsugi-paper-warm) !important;
+  color: var(--kintsugi-gold) !important;
+}
+.ant-btn-text.ant-btn-dangerous {
+  color: #b91c1c;
+}
+.ant-btn-text.ant-btn-dangerous:not(:disabled):hover {
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+}
+
+/* Link：哑金 + 细字 */
+.ant-btn-link {
+  color: var(--kintsugi-gold);
+  padding-left: 6px;
+  padding-right: 6px;
+}
+.ant-btn-link:not(:disabled):hover {
+  color: #8a6932 !important;
+}
+
+/* Dashed：虚线哑金 */
+.ant-btn-dashed:not(.ant-btn-dangerous) {
+  border-color: var(--kintsugi-gold-soft);
+  color: var(--kintsugi-gold);
+  background: transparent;
+}
+.ant-btn-dashed:not(.ant-btn-dangerous):hover {
+  border-color: var(--kintsugi-gold) !important;
+  color: var(--kintsugi-gold) !important;
+  background: var(--kintsugi-paper-warm) !important;
+}
+
+/* 给操作 Space 里串联的小按钮一个间距感 */
+.ant-btn-sm {
+  padding-inline: 10px;
+}
+
+/* Icon-only 按钮：hover 哑金 */
+.ant-btn-icon-only:not(.ant-btn-primary):not(:disabled):hover {
+  border-color: var(--kintsugi-gold-soft) !important;
+  color: var(--kintsugi-gold) !important;
+}
+
+/* Button group split 线条 */
+.ant-btn-group .ant-btn:not(:last-child) {
+  border-right-color: var(--kintsugi-rule-soft);
+}
+
+/* =========================================================
+   Tag —— mono caps 字，统一字号
+   ========================================================= */
+
+.ant-tag {
+  font-family: var(--kintsugi-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 1px 8px;
+  border-radius: 3px;
+  line-height: 18px;
+}
+
+/* 默认 Tag（无 color）—— 纸暖底 + 细边 */
+.ant-tag:not(.ant-tag-has-color):not([class*='ant-tag-']) {
+  background: var(--kintsugi-paper-warm);
+  border-color: var(--kintsugi-rule-soft);
+  color: var(--kintsugi-ink);
+}
+
+/* =========================================================
+   Pagination —— 哑金 hover & 选中
+   ========================================================= */
+
+.ant-pagination-item:hover {
+  border-color: var(--kintsugi-gold-soft) !important;
+}
+.ant-pagination-item:hover a {
+  color: var(--kintsugi-gold) !important;
+}
+.ant-pagination-item-active {
+  border-color: var(--kintsugi-gold) !important;
+  background: var(--kintsugi-paper-warm) !important;
+}
+.ant-pagination-item-active a {
+  color: var(--kintsugi-gold) !important;
+}
+.ant-pagination-prev:hover .ant-pagination-item-link,
+.ant-pagination-next:hover .ant-pagination-item-link {
+  border-color: var(--kintsugi-gold-soft) !important;
+  color: var(--kintsugi-gold) !important;
+}
+
+/* =========================================================
+   Empty 与 caps 样式
+   ========================================================= */
+
+.ant-empty-description {
+  font-family: var(--kintsugi-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+}
+
+/* Form 标签字号统一 */
+.ant-form-item-label > label {
+  font-size: 13px;
+  color: var(--kintsugi-ink);
+}
+
+/* Drawer / Modal 标题用衬线 */
+.ant-modal-title,
+.ant-drawer-title {
+  font-family: var(--kintsugi-serif);
+  font-weight: 400;
+  font-size: 18px;
+  letter-spacing: -0.005em;
+  color: var(--kintsugi-ink);
+}
+
+/* Card 标题：让用 Space + Tag 的标题保持灵活，不强行衬线（保留默认） */
+.ant-card-head-title {
+  font-weight: 500;
+}
+
+/* Tabs hover 哑金 */
+.ant-tabs-tab:hover {
+  color: var(--kintsugi-gold) !important;
+}
+
+/* 选中 Tabs 标签下沿用哑金 */
+.ant-tabs-ink-bar {
+  background: var(--kintsugi-gold) !important;
+}
+
+/* =========================================================
+   Inputs · Select · TextArea · Number · Password
+   ========================================================= */
+
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-number,
+.ant-picker,
+.ant-select:not(.ant-select-customize-input) .ant-select-selector,
+.ant-input-search .ant-input,
+.ant-input-search .ant-input-search-button {
+  border-color: var(--kintsugi-rule) !important;
+  background: #fff !important;
+  color: var(--kintsugi-ink) !important;
+  border-radius: 6px !important;
+  transition: border-color 140ms ease, box-shadow 140ms ease,
+    background-color 140ms ease !important;
+}
+
+/* hover：哑金浅 */
+.ant-input:hover:not(:disabled),
+.ant-input-affix-wrapper:hover:not(.ant-input-affix-wrapper-disabled),
+.ant-input-number:hover:not(.ant-input-number-disabled),
+.ant-picker:hover:not(.ant-picker-disabled),
+.ant-select:not(.ant-select-disabled):not(.ant-select-customize-input):hover
+  .ant-select-selector {
+  border-color: var(--kintsugi-gold-soft) !important;
+}
+
+/* focus：哑金 + ring */
+.ant-input:focus,
+.ant-input-focused,
+.ant-input-affix-wrapper-focused,
+.ant-input-affix-wrapper:focus-within,
+.ant-input-number-focused,
+.ant-picker-focused,
+.ant-select-focused:not(.ant-select-customize-input):not(.ant-select-disabled)
+  .ant-select-selector {
+  border-color: var(--kintsugi-gold) !important;
+  box-shadow: 0 0 0 3px rgba(160, 123, 63, 0.14) !important;
+  outline: none !important;
+}
+
+/* disabled */
+.ant-input:disabled,
+.ant-input-disabled,
+.ant-input-affix-wrapper-disabled,
+.ant-input-number-disabled,
+.ant-select-disabled .ant-select-selector,
+.ant-picker-disabled {
+  background: var(--kintsugi-paper-warm) !important;
+  border-color: var(--kintsugi-rule-soft) !important;
+  color: var(--kintsugi-mutedSoft, #94a3b8) !important;
+}
+
+/* placeholder：mono + 偏淡 */
+.ant-input::placeholder,
+.ant-input-number-input::placeholder,
+.ant-picker-input > input::placeholder,
+.ant-select-selection-placeholder {
+  color: #94a3b8 !important;
+  font-family: var(--kintsugi-ui, sans-serif);
+}
+
+/* TextArea：等宽（更适合写 SQL/JSON） */
+textarea.ant-input {
+  font-family: var(--kintsugi-mono);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* Input.Search 的搜索按钮：复用 default 风格 */
+.ant-input-search > .ant-input-group > .ant-input-group-addon:last-child
+  .ant-input-search-button {
+  background: var(--kintsugi-ink) !important;
+  border-color: var(--kintsugi-ink) !important;
+  color: #fff !important;
+}
+.ant-input-search > .ant-input-group > .ant-input-group-addon:last-child
+  .ant-input-search-button:hover {
+  background: var(--kintsugi-gold) !important;
+  border-color: var(--kintsugi-gold) !important;
+}
+
+/* InputNumber 加减按钮 */
+.ant-input-number-handler:hover .ant-input-number-handler-up-inner,
+.ant-input-number-handler:hover .ant-input-number-handler-down-inner {
+  color: var(--kintsugi-gold) !important;
+}
+
+/* Select 下拉项：选中态纸暖底 */
+.ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background: var(--kintsugi-paper-warm) !important;
+  color: var(--kintsugi-ink) !important;
+  font-weight: 500;
+}
+.ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+  background: rgba(160, 123, 63, 0.08) !important;
+}
+
+/* Multi Select 标签：纸暖 + 细边 */
+.ant-select-multiple .ant-select-selection-item {
+  background: var(--kintsugi-paper-warm) !important;
+  border: 1px solid var(--kintsugi-rule-soft) !important;
+  border-radius: 3px !important;
+  color: var(--kintsugi-ink) !important;
+  font-family: var(--kintsugi-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+/* =========================================================
+   Radio · Radio.Button（顶栏切换 / 段切换）
+   ========================================================= */
+
+.ant-radio-wrapper:hover .ant-radio-inner {
+  border-color: var(--kintsugi-gold) !important;
+}
+.ant-radio-checked .ant-radio-inner {
+  border-color: var(--kintsugi-ink) !important;
+  background: var(--kintsugi-ink) !important;
+}
+.ant-radio-checked .ant-radio-inner::after {
+  background: #fff !important;
+}
+.ant-radio:hover .ant-radio-inner,
+.ant-radio-input:focus + .ant-radio-inner {
+  border-color: var(--kintsugi-gold) !important;
+}
+
+/* Radio.Button —— 段切换 */
+.ant-radio-button-wrapper {
+  background: #fff !important;
+  border-color: var(--kintsugi-rule) !important;
+  color: var(--kintsugi-muted) !important;
+  transition: all 140ms ease !important;
+}
+.ant-radio-button-wrapper:hover:not(.ant-radio-button-wrapper-disabled) {
+  background: var(--kintsugi-paper-warm) !important;
+  color: var(--kintsugi-ink) !important;
+  border-color: var(--kintsugi-gold-soft) !important;
+}
+.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+  background: var(--kintsugi-ink) !important;
+  border-color: var(--kintsugi-ink) !important;
+  color: #fff !important;
+  box-shadow: -1px 0 0 0 var(--kintsugi-ink) !important;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover {
+  background: var(--kintsugi-ink) !important;
+  border-color: var(--kintsugi-ink) !important;
+  color: #fff !important;
+  filter: brightness(1.06);
+}
+.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled)::before {
+  background: var(--kintsugi-ink) !important;
+}
+
+/* Radio button 大小一致 */
+.ant-radio-button-wrapper-sm {
+  letter-spacing: 0.02em;
+}
+
+/* =========================================================
+   Segmented（更现代的切换）
+   ========================================================= */
+
+.ant-segmented {
+  background: var(--kintsugi-paper-warm) !important;
+  border: 1px solid var(--kintsugi-rule-soft) !important;
+  padding: 2px !important;
+  border-radius: 6px !important;
+}
+.ant-segmented-item {
+  color: var(--kintsugi-muted) !important;
+  font-family: var(--kintsugi-ui, sans-serif);
+  transition: color 140ms ease !important;
+}
+.ant-segmented-item:hover:not(.ant-segmented-item-disabled) {
+  color: var(--kintsugi-ink) !important;
+}
+.ant-segmented-item-selected {
+  background: #fff !important;
+  color: var(--kintsugi-ink) !important;
+  font-weight: 500;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(160, 123, 63, 0.25) !important;
+  border-radius: 4px !important;
+}
+
+/* =========================================================
+   Checkbox · Switch
+   ========================================================= */
+
+.ant-checkbox-inner {
+  border-color: var(--kintsugi-rule) !important;
+  border-radius: 3px !important;
+}
+.ant-checkbox:hover .ant-checkbox-inner,
+.ant-checkbox-wrapper:hover .ant-checkbox-inner {
+  border-color: var(--kintsugi-gold) !important;
+}
+.ant-checkbox-checked .ant-checkbox-inner {
+  background: var(--kintsugi-ink) !important;
+  border-color: var(--kintsugi-ink) !important;
+}
+.ant-checkbox-indeterminate .ant-checkbox-inner::after {
+  background: var(--kintsugi-gold) !important;
+}
+.ant-checkbox-input:focus + .ant-checkbox-inner {
+  border-color: var(--kintsugi-gold) !important;
+}
+
+.ant-switch {
+  background: rgba(15, 23, 42, 0.18) !important;
+}
+.ant-switch:hover:not(.ant-switch-disabled):not(.ant-switch-checked) {
+  background: rgba(15, 23, 42, 0.32) !important;
+}
+.ant-switch.ant-switch-checked {
+  background: var(--kintsugi-ink) !important;
+}
+.ant-switch.ant-switch-checked:hover:not(.ant-switch-disabled) {
+  background: var(--kintsugi-gold) !important;
+}
+
+/* =========================================================
+   DatePicker / RangePicker
+   ========================================================= */
+
+.ant-picker-dropdown
+  .ant-picker-cell-inner.ant-picker-cell-inner.ant-picker-cell-inner {
+  border-radius: 4px !important;
+}
+.ant-picker-dropdown
+  .ant-picker-cell-selected:not(.ant-picker-cell-disabled)
+  .ant-picker-cell-inner {
+  background: var(--kintsugi-ink) !important;
+  color: #fff !important;
+}
+.ant-picker-dropdown
+  .ant-picker-cell-today:not(.ant-picker-cell-selected)
+  .ant-picker-cell-inner::before {
+  border-color: var(--kintsugi-gold) !important;
+}
+.ant-picker-today-btn {
+  color: var(--kintsugi-gold) !important;
+}
+.ant-picker-today-btn:hover {
+  color: #8a6932 !important;
+}
+
+/* =========================================================
+   Slider · Upload
+   ========================================================= */
+
+.ant-slider-track {
+  background: var(--kintsugi-ink) !important;
+}
+.ant-slider-handle::after {
+  box-shadow: 0 0 0 2px var(--kintsugi-ink) !important;
+}
+.ant-slider:hover .ant-slider-handle::after {
+  box-shadow: 0 0 0 2px var(--kintsugi-gold) !important;
+}
+.ant-slider:hover .ant-slider-track {
+  background: var(--kintsugi-gold) !important;
+}
+
+.ant-upload.ant-upload-drag {
+  background: #fff !important;
+  border: 1px dashed var(--kintsugi-rule) !important;
+  border-radius: 8px !important;
+  transition: all 160ms ease;
+}
+.ant-upload.ant-upload-drag:hover:not(.ant-upload-disabled) {
+  border-color: var(--kintsugi-gold) !important;
+  background: var(--kintsugi-paper-warm) !important;
+}
+.ant-upload.ant-upload-drag p.ant-upload-drag-icon .anticon {
+  color: var(--kintsugi-gold) !important;
+}
+.ant-upload.ant-upload-drag p.ant-upload-text {
+  color: var(--kintsugi-ink) !important;
+  font-family: var(--kintsugi-serif);
+  font-size: 16px !important;
+}
+.ant-upload.ant-upload-drag p.ant-upload-hint {
+  color: var(--kintsugi-muted) !important;
+  font-family: var(--kintsugi-mono);
+  font-size: 11px !important;
+  letter-spacing: 0.06em;
+}
+
+/* =========================================================
+   Form 容器 / 标签 / 错误
+   ========================================================= */
+
+.ant-form-item {
+  margin-bottom: 18px;
+}
+.ant-form-item-label {
+  padding-bottom: 6px !important;
+}
+.ant-form-item-label > label {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--kintsugi-muted);
+  font-weight: 500;
+}
+.ant-form-item-label > label.ant-form-item-required::before {
+  color: #b91c1c !important;
+}
+.ant-form-item-explain-error {
+  font-family: var(--kintsugi-mono);
+  font-size: 11px !important;
+  letter-spacing: 0.04em;
+  color: #b91c1c !important;
+  margin-top: 4px;
+}
+
+/* Space.Compact 内连续控件保持一致圆角 */
+.ant-space-compact .ant-input:first-child,
+.ant-space-compact .ant-select:first-child .ant-select-selector,
+.ant-space-compact .ant-picker:first-child {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+.ant-space-compact .ant-input:last-child,
+.ant-space-compact .ant-select:last-child .ant-select-selector,
+.ant-space-compact .ant-picker:last-child {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+/* =========================================================
+   Links —— 全部 <a> 走哑金，去默认蓝
+   ========================================================= */
+
+a,
+a:visited {
+  color: var(--kintsugi-gold);
+  text-decoration: none;
+  transition: color 140ms ease;
+}
+a:hover { color: #8a6932; }
+a:active { color: #6b522a; }
+
+.ant-typography a,
+.ant-typography a:hover,
+.ant-typography a:focus,
+.ant-typography-link,
+.ant-typography-link:hover {
+  color: var(--kintsugi-gold) !important;
+}
+
+.ant-breadcrumb a {
+  color: var(--kintsugi-muted) !important;
+  transition: color 140ms ease;
+}
+.ant-breadcrumb a:hover {
+  color: var(--kintsugi-gold) !important;
+  background: transparent !important;
+}
+.ant-breadcrumb > ol > li:last-child,
+.ant-breadcrumb > ol > li:last-child a {
+  color: var(--kintsugi-ink) !important;
+}
+
+/* =========================================================
+   Tag —— 把 antd "blue / processing / geekblue / cyan" 换到哑金/中性
+   ========================================================= */
+
+.ant-tag-blue,
+.ant-tag-processing {
+  background: #faf6ec !important;
+  color: #8a6932 !important;
+  border-color: #e4d5a8 !important;
+}
+.ant-tag-blue-inverse {
+  background: var(--kintsugi-gold) !important;
+  color: #fff !important;
+  border-color: var(--kintsugi-gold) !important;
+}
+.ant-tag-processing .anticon,
+.ant-tag-processing svg {
+  color: var(--kintsugi-gold) !important;
+}
+.ant-tag-geekblue,
+.ant-tag-cyan {
+  background: var(--kintsugi-paper-warm) !important;
+  color: var(--kintsugi-ink) !important;
+  border-color: var(--kintsugi-rule-soft) !important;
+}
+
+/* Spin / Progress / Badge / Dropdown 残留蓝色 */
+.ant-spin-dot-item {
+  background-color: var(--kintsugi-gold) !important;
+}
+.ant-spin-text {
+  color: var(--kintsugi-muted) !important;
+  font-family: var(--kintsugi-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ant-progress-bg,
+.ant-progress-success-bg {
+  background: var(--kintsugi-gold) !important;
+}
+.ant-progress-circle .ant-progress-text {
+  color: var(--kintsugi-ink) !important;
+}
+.ant-badge-status-processing::before,
+.ant-badge-status-processing .ant-badge-status-dot {
+  background: var(--kintsugi-gold) !important;
+}
+.ant-dropdown-menu-item-selected,
+.ant-dropdown-menu-submenu-title-selected {
+  background: var(--kintsugi-paper-warm) !important;
+  color: var(--kintsugi-ink) !important;
+}
+.ant-dropdown-menu-item:not(.ant-dropdown-menu-item-disabled):hover {
+  background: var(--kintsugi-paper-warm) !important;
+  color: var(--kintsugi-ink) !important;
+}
+
+/* =========================================================
+   Alert —— 白底 + 左色条 magazine 风
+   ========================================================= */
+
+.ant-alert {
+  background: #fff !important;
+  border: 1px solid var(--kintsugi-rule-soft) !important;
+  border-left-width: 3px !important;
+  border-radius: 6px !important;
+  padding: 12px 16px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+  align-items: flex-start;
+}
+
+.ant-alert.ant-alert-with-description {
+  padding: 14px 18px !important;
+}
+
+.ant-alert .ant-alert-icon {
+  font-size: 16px !important;
+  margin-inline-end: 12px !important;
+  margin-top: 1px;
+}
+
+.ant-alert .ant-alert-message {
+  color: var(--kintsugi-ink) !important;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.005em;
+  line-height: 1.55;
+}
+
+.ant-alert.ant-alert-with-description .ant-alert-message {
+  font-family: var(--kintsugi-serif);
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: -0.005em;
+  margin-bottom: 6px;
+}
+
+.ant-alert .ant-alert-description {
+  color: var(--kintsugi-muted) !important;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.ant-alert .ant-alert-close-icon {
+  color: #94a3b8;
+  margin-top: 2px;
+  transition: color 140ms ease;
+}
+.ant-alert .ant-alert-close-icon:hover {
+  color: var(--kintsugi-gold) !important;
+}
+
+/* 不同 type 只换"左色条 + 图标色"，背景一律白 */
+.ant-alert-info {
+  border-left-color: var(--kintsugi-gold) !important;
+}
+.ant-alert-info .ant-alert-icon {
+  color: var(--kintsugi-gold) !important;
+}
+
+.ant-alert-success {
+  border-left-color: var(--kintsugi-ok) !important;
+}
+.ant-alert-success .ant-alert-icon {
+  color: var(--kintsugi-ok) !important;
+}
+
+.ant-alert-warning {
+  border-left-color: var(--kintsugi-gold) !important;
+}
+.ant-alert-warning .ant-alert-icon {
+  color: var(--kintsugi-gold) !important;
+}
+
+.ant-alert-error {
+  border-left-color: var(--kintsugi-fail) !important;
+}
+.ant-alert-error .ant-alert-icon {
+  color: var(--kintsugi-fail) !important;
+}
+
+/* Banner 模式（整页顶置 alert）：去圆角 */
+.ant-alert-banner {
+  border-radius: 0 !important;
+  border-left: none !important;
+  border-top-width: 3px !important;
+  border-top-style: solid !important;
+}
+.ant-alert-banner.ant-alert-info {
+  border-top-color: var(--kintsugi-gold) !important;
+}
+.ant-alert-banner.ant-alert-success {
+  border-top-color: var(--kintsugi-ok) !important;
+}
+.ant-alert-banner.ant-alert-warning {
+  border-top-color: var(--kintsugi-gold) !important;
+}
+.ant-alert-banner.ant-alert-error {
+  border-top-color: var(--kintsugi-fail) !important;
+}
+
+/* =========================================================
+   Message · Notification —— 浮层提示
+   ========================================================= */
+
+.ant-message-notice-content {
+  background: var(--kintsugi-ink) !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+  padding: 10px 16px !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18) !important;
+  font-size: 13px;
+}
+.ant-message-notice-content .anticon {
+  color: var(--kintsugi-gold) !important;
+}
+.ant-message-success .anticon {
+  color: var(--kintsugi-ok) !important;
+}
+.ant-message-error .anticon {
+  color: #f87171 !important;
+}
+.ant-message-warning .anticon {
+  color: var(--kintsugi-gold-soft) !important;
+}
+
+.ant-notification-notice {
+  background: #fff !important;
+  border: 1px solid var(--kintsugi-rule-soft) !important;
+  border-left: 3px solid var(--kintsugi-gold) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.10) !important;
+}
+.ant-notification-notice-message {
+  color: var(--kintsugi-ink) !important;
+  font-family: var(--kintsugi-serif);
+  font-weight: 400;
+  font-size: 15px !important;
+}
+.ant-notification-notice-description {
+  color: var(--kintsugi-muted) !important;
+  font-size: 13px !important;
+}
+
+/* =========================================================
+   Popconfirm / Tooltip
+   ========================================================= */
+
+.ant-popconfirm .ant-popconfirm-message-text {
+  color: var(--kintsugi-ink);
+}
+.ant-popconfirm-buttons .ant-btn {
+  font-size: 12px;
+}
+
+.ant-tooltip-inner {
+  background: var(--kintsugi-ink) !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  letter-spacing: 0.02em;
+  border-radius: 4px !important;
+}
+.ant-tooltip-arrow::before {
+  background: var(--kintsugi-ink) !important;
+}
+
+/* =========================================================
+   PageWrap —— 默认 padding 与最小高度；移动端进一步收紧
+   ========================================================= */
+.kintsugi-page {
+  padding: 32px 40px 64px;
+  min-height: calc(100vh - 64px);
+}
+.kintsugi-page-fullbleed {
+  padding: 0 !important;
+}
+
+/* =========================================================
+   Mobile / 平板 ——
+   断点：lg = 992，md = 768，sm = 600，xs = 480。
+   ========================================================= */
+@media (max-width: 992px) {
+  .kintsugi-page {
+    padding: 22px 20px 56px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* 内页 padding 收紧；header 缩到 56，min-height 跟上 */
+  .kintsugi-page {
+    padding: 16px 12px 48px;
+    min-height: calc(100vh - 56px);
+  }
+
+  /* Header 高度更紧凑 */
+  .kintsugi-header {
+    height: 56px !important;
+    line-height: 56px !important;
+  }
+  .kintsugi-content {
+    min-height: calc(100vh - 56px) !important;
+  }
+
+  /* AntD Modal —— 保留侧边距，避免顶满边 */
+  .ant-modal {
+    max-width: calc(100vw - 16px) !important;
+    margin: 8px auto !important;
+    top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .ant-modal-content {
+    padding: 16px !important;
+  }
+  .ant-modal-body {
+    max-height: calc(100vh - 200px);
+    overflow: auto;
+  }
+
+  /* AntD Drawer —— 兜底不超出视口；保持组件 width prop 的语义 */
+  .ant-drawer-content-wrapper {
+    max-width: 100vw;
+  }
+
+  /* Card 内部 padding 收紧 */
+  .ant-card-body {
+    padding: 14px !important;
+  }
+  .ant-card-head {
+    padding: 0 14px !important;
+    min-height: 44px !important;
+  }
+  .ant-card-head-title {
+    padding: 12px 0 !important;
+    font-size: 14px;
+  }
+  .ant-card-extra {
+    padding: 12px 0 !important;
+  }
+
+  /* Card title + extra 在窄屏堆叠 */
+  .ant-card-head-wrapper {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+  .ant-card-head-wrapper .ant-card-extra {
+    margin-inline-start: 0;
+    width: 100%;
+    padding-bottom: 12px !important;
+  }
+
+  /* Form.Item 紧凑 */
+  .ant-form-item {
+    margin-bottom: 14px;
+  }
+
+  /* Tab —— 大字号收紧 */
+  .ant-tabs-large > .ant-tabs-nav .ant-tabs-tab {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  /* Breadcrumb 不要把单行撑过宽 */
+  .ant-breadcrumb {
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* Descriptions 默认在窄屏单列 */
+  .ant-descriptions-row > th,
+  .ant-descriptions-row > td {
+    padding: 8px 12px !important;
+  }
+
+  /* Table —— 默认单元格紧凑 */
+  .ant-table {
+    font-size: 13px;
+  }
+  .ant-table.ant-table-middle .ant-table-tbody > tr > td,
+  .ant-table.ant-table-middle .ant-table-thead > tr > th {
+    padding: 8px 10px !important;
+  }
+  .ant-table.ant-table-small .ant-table-tbody > tr > td,
+  .ant-table.ant-table-small .ant-table-thead > tr > th {
+    padding: 6px 8px !important;
+  }
+  /* 让任何没有显式 scroll-x 的 Table 也能横向滚 */
+  .ant-table-content,
+  .ant-table-body {
+    overflow-x: auto !important;
+  }
+
+  /* Pagination 紧凑 + 居中 */
+  .ant-pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 6px;
+  }
+  .ant-pagination-options {
+    margin-inline-start: 0 !important;
+  }
+
+  /* Dropdown 弹层全宽限制 */
+  .ant-dropdown,
+  .ant-select-dropdown {
+    max-width: calc(100vw - 16px);
+  }
+
+  /* Alert 紧凑 */
+  .ant-alert {
+    padding: 10px 12px !important;
+  }
+  .ant-alert.ant-alert-with-description {
+    padding: 12px !important;
+  }
+}
+
+/* DatasetDataPage Detail Drawer 字段行 —— 窄屏单列 */
+@media (max-width: 600px) {
+  .kdsd-detail-row {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+  }
+}
+
+/* 极窄屏：让 Modal/Drawer 头部更紧凑 */
+@media (max-width: 480px) {
+  .kintsugi-page {
+    padding: 14px 10px 44px;
+  }
+  .ant-modal-header {
+    margin-bottom: 12px !important;
+  }
+  .ant-modal-title {
+    font-size: 16px !important;
+  }
+  .ant-drawer-header {
+    padding: 12px 14px !important;
+  }
+  .ant-drawer-body {
+    padding: 12px 14px !important;
+  }
+  .ant-drawer-title {
+    font-size: 16px !important;
+  }
+  .ant-tabs-tab {
+    padding: 8px 10px !important;
+  }
+  /* 顶栏移动端横线再细一点 */
+  .kintsugi-header {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+}
+
+/* =========================================================
+   HomePage —— 自适应栅格 + 字号
+   ========================================================= */
+.khome-shell { min-height: calc(100vh - 64px); }
+.khome-shell .khome-hero-title { font-size: 56px; }
+.khome-shell .khome-stat-grid { grid-template-columns: repeat(4, 1fr); }
+.khome-shell .khome-modules { grid-template-columns: repeat(3, 1fr); }
+.khome-shell .khome-recent-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; }
+.khome-shell .khome-status { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+@media (max-width: 1100px) {
+  .khome-shell .khome-modules { grid-template-columns: repeat(2, 1fr); }
+  .khome-shell .khome-recent-grid { grid-template-columns: 1fr; }
+  .khome-shell .khome-status { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .khome-shell { padding: 24px 16px 56px !important; min-height: calc(100vh - 56px); }
+  .khome-shell .khome-hero-title { font-size: clamp(30px, 8vw, 42px); line-height: 1.12 !important; }
+  .khome-shell .khome-stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .khome-shell .khome-stat-grid .khome-stat:nth-child(3) { border-left: none; }
+  .khome-shell .khome-modules { grid-template-columns: 1fr; }
+  .khome-shell .khome-status { grid-template-columns: 1fr; }
+  .khome-shell .khome-mark-cn { font-size: 140px !important; right: -10px !important; top: -8px !important; }
+  .khome-shell .khome-stat { padding: 16px 14px !important; }
+  .khome-shell .khome-stat-num { font-size: 28px !important; }
+  .khome-shell .khome-section-head { gap: 6px; }
+  .khome-shell .khome-section-title { font-size: 18px !important; }
+  .khome-shell .khome-divider { margin: 28px 0 20px !important; }
+  .khome-shell .khome-footer {
+    flex-direction: column; align-items: flex-start; gap: 10px;
+    font-size: 10px;
+  }
+  .khome-shell .khome-hero-sub { font-size: 13px !important; line-height: 1.65 !important; }
+  .khome-shell .khome-hero-eyebrow { margin-bottom: 12px !important; }
+}
+@media (max-width: 420px) {
+  .khome-shell { padding: 18px 12px 48px !important; }
+  .khome-shell .khome-stat-grid { grid-template-columns: 1fr; }
+  .khome-shell .khome-stat-grid .khome-stat { border-left: none !important; border-top: 1px solid var(--kintsugi-rule); }
+  .khome-shell .khome-stat-grid .khome-stat:first-child { border-top: none; }
+}
+
+/* =========================================================
+   LoginPage —— 双栏在窄屏上下叠
+   ========================================================= */
+@media (max-width: 880px) {
+  .k-login-shell { grid-template-columns: 1fr !important; }
+  .k-login-form {
+    border-left: none !important;
+    border-top: 1px solid var(--kintsugi-rule) !important;
+    padding: 56px 32px 64px !important;
+  }
+  .k-login-form > div[aria-hidden] { display: none !important; }
+  .k-login-brand { padding: 48px 32px 24px !important; }
+  .k-login-brand h1 { font-size: clamp(34px, 7vw, 48px) !important; }
+  .k-login-feature-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+}
+@media (max-width: 480px) {
+  .k-login-brand { padding: 40px 22px 12px !important; }
+  .k-login-form { padding: 40px 22px 56px !important; }
+  .k-login-brand h1 { font-size: clamp(28px, 7.4vw, 38px) !important; }
+}
+
+/* =========================================================
+   IntegrationsPage —— 2 栏并排在窄屏单列
+   ========================================================= */
+.kintegr-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+}
+@media (max-width: 768px) {
+  .kintegr-grid-2 { grid-template-columns: 1fr !important; gap: 16px !important; }
+  .kintegr-kv { grid-template-columns: 1fr !important; gap: 6px !important; }
+}
+
+/* =========================================================
+   ER Graph 页 —— 全屏画布外侧仅在窄屏给少量 padding
+   ========================================================= */
+.ker-shell { padding: 0; }
+@media (max-width: 768px) {
+  .ker-shell { padding: 8px !important; }
+  .ker-er-frame { height: 70vh !important; }
+}
+
+/* =========================================================
+   新建数据源 Modal —— 三列输入在窄屏堆叠
+   ========================================================= */
+.kintsugi-ds-create-modal .kds-row {
+  display: flex;
+  gap: 8px;
+}
+@media (max-width: 600px) {
+  .kintsugi-ds-create-modal .kds-row {
+    flex-direction: column;
+    gap: 0;
+  }
+  .kintsugi-ds-create-modal .kds-row > .ant-form-item {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   LandingPage —— 自有色板（保留 hex）
+   ========================================================= */
+
+@keyframes kintsugiRise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes kintsugiSeam {
+  from { transform: scaleX(0); transform-origin: left; }
+  to   { transform: scaleX(1); transform-origin: left; }
+}
+@keyframes kintsugiHairline {
+  from { opacity: 0; transform: scaleY(0); }
+  to   { opacity: 0.85; transform: scaleY(1); }
+}
+@keyframes kintsugiDrift {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-6px); }
+}
+
+.k-rise { animation: kintsugiRise 720ms cubic-bezier(.2,.65,.2,1) both; }
+.k-rise-1 { animation-delay: .05s; }
+.k-rise-2 { animation-delay: .15s; }
+.k-rise-3 { animation-delay: .25s; }
+.k-rise-4 { animation-delay: .35s; }
+.k-rise-5 { animation-delay: .45s; }
+.k-rise-6 { animation-delay: .55s; }
+.k-seam {
+  animation: kintsugiSeam 1100ms cubic-bezier(.7,0,.3,1) both;
+  animation-delay: .15s;
+}
+.k-hair {
+  animation: kintsugiHairline 600ms ease-out both;
+  transform-origin: top;
+}
+
+.k-cap-card {
+  transition: border-color .2s ease, transform .25s ease, box-shadow .25s ease;
+  position: relative;
+}
+.k-cap-card::after {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 18px;
+  height: 1px;
+  background: #a07b3f;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .35s cubic-bezier(.7,0,.3,1);
+}
+.k-cap-card:hover {
+  border-color: #a07b3f;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -22px rgba(160, 123, 63, .55);
+}
+.k-cap-card:hover::after { transform: scaleX(1); }
+
+.k-cta-primary { transition: background .2s ease, color .2s ease, letter-spacing .2s ease; }
+.k-cta-primary:hover { background: #a07b3f !important; letter-spacing: .22em !important; }
+.k-cta-ghost { transition: color .2s ease, border-color .2s ease, letter-spacing .2s ease; }
+.k-cta-ghost:hover {
+  color: #a07b3f !important;
+  border-color: #a07b3f !important;
+  letter-spacing: .22em !important;
+}
+
+.k-stack-row { transition: color .2s ease, border-color .2s ease; }
+.k-stack-row:hover { color: #a07b3f; border-color: #a07b3f; }
+
+.k-mark-link {
+  transition: color .2s ease;
+  color: #7a7466;
+  text-decoration: none;
+}
+.k-mark-link:hover { color: #a07b3f; }
+
+.k-step-num {
+  font-family: "Iowan Old Style", "Apple Garamond", "EB Garamond", "Songti SC", "STSong",
+    "Source Han Serif SC", serif;
+  font-style: italic;
+  font-size: 88px;
+  line-height: 1;
+  color: #efeadc;
+  user-select: none;
+  letter-spacing: -.04em;
+}
+
+.k-watermark { user-select: none; pointer-events: none; }
+
+@media (max-width: 980px) {
+  .k-section {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+    padding-top: 72px !important;
+    padding-bottom: 72px !important;
+  }
+  .k-section-fbleed { padding-top: 56px !important; padding-bottom: 56px !important; }
+  .k-hero-grid { grid-template-columns: 1fr !important; gap: 36px !important; }
+  .k-cup-hero {
+    position: static !important;
+    width: 70vw !important;
+    max-width: 360px !important;
+    height: auto !important;
+    margin: 0 auto -12px !important;
+    display: block !important;
+    opacity: 0.95 !important;
+    right: auto !important;
+    top: auto !important;
+  }
+  .k-hero-h1 { font-size: clamp(40px, 9vw, 68px) !important; }
+  .k-hero-stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .k-hero-stats > div { border-left: none !important; border-top: 1px solid #eeece4 !important; }
+  .k-hero-stats > div:nth-child(-n+2) { border-top: none !important; }
+  .k-hero-stats > div:nth-child(2n) { border-left: 1px solid #eeece4 !important; }
+  .k-cols-3 { grid-template-columns: 1fr !important; gap: 32px !important; }
+  .k-cols-4 { grid-template-columns: repeat(2, 1fr) !important; }
+  .k-cols-2-stack { grid-template-columns: 1fr !important; gap: 28px !important; }
+  .k-comparison-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+  .k-comparison-vs { display: none !important; }
+  .k-codesamples-grid { grid-template-columns: 1fr !important; }
+  .k-codesamples-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    border-right: none !important;
+    border-bottom: 1px solid #eeece4 !important;
+  }
+  .k-codesamples-nav button {
+    border-left: none !important;
+    border-bottom: 3px solid transparent !important;
+    flex: 0 0 auto !important;
+    min-width: 140px !important;
+  }
+  .k-codesamples-nav button.k-cs-active {
+    border-bottom-color: #a07b3f !important;
+    border-left-color: transparent !important;
+  }
+  .k-arch-row { grid-template-columns: 1fr !important; }
+  .k-workflow-row {
+    grid-template-columns: 52px 1fr !important;
+    gap: 12px 18px !important;
+    padding: 24px 0 !important;
+  }
+  .k-workflow-row > :nth-child(2) { grid-column: 2 !important; align-self: center !important; }
+  .k-workflow-row > :nth-child(3) {
+    grid-column: 1 / -1 !important;
+    padding-left: 70px !important;
+    padding-top: 8px !important;
+  }
+  .k-faq-grid { grid-template-columns: 1fr !important; }
+  .k-faq-item { border-right: none !important; }
+  .k-section-header { gap: 18px !important; }
+  .k-section-numeral { font-size: 64px !important; }
+  .k-section-title { font-size: 32px !important; }
+  .k-topbar-inner { padding: 12px 18px !important; gap: 12px !important; }
+  .k-topbar-nav { display: none !important; }
+  .k-stack-grid { grid-template-columns: 1fr 1fr !important; }
+  .k-stack-grid > div:nth-child(2) { border-right: none !important; }
+  .k-pull-quote { font-size: clamp(22px, 5.5vw, 32px) !important; }
+  .k-pull-watermark { font-size: 220px !important; }
+  .k-artifact-grid { grid-template-columns: 1fr !important; gap: 48px !important; }
+  .k-artifact-plate { transform: rotate(0deg) !important; max-width: 360px !important; }
+  .k-artifact-copy { text-align: center !important; }
+  .k-artifact-copy > div:first-child { text-align: center !important; }
+  .k-artifact-copy blockquote { text-align: left !important; }
+  .k-closing-watermark { font-size: 240px !important; }
+  .k-closing-h2 { font-size: clamp(32px, 6vw, 52px) !important; }
+  .k-cta-row { gap: 12px !important; }
+  .k-cta-row > a { padding: 14px 22px !important; }
+  .k-doanatomy-pre { font-size: 11px !important; padding: 16px 14px !important; }
+  .k-doanatomy-left { position: static !important; min-height: 0 !important; }
+  .k-doanatomy-left-inner { position: static !important; max-height: 60vh !important; }
+  .k-do-side > div { padding: 12px 0 !important; }
+  .k-foot-inner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+}
+@media (max-width: 560px) {
+  .k-cols-4 { grid-template-columns: 1fr !important; }
+  .k-stack-grid { grid-template-columns: 1fr !important; }
+  .k-stack-grid > div { border-right: none !important; border-bottom: 1px solid #eeece4 !important; }
+  .k-stack-grid > div:last-child { border-bottom: none !important; }
+  .k-hero-stats { grid-template-columns: 1fr !important; }
+  .k-hero-stats > div { border-left: none !important; border-top: 1px solid #eeece4 !important; }
+  .k-hero-stats > div:first-child { border-top: none !important; }
+  .k-hero-stats > div:nth-child(2n) { border-left: none !important; }
+  .k-section { padding: 56px 18px !important; }
+  .k-hero-section { padding: 48px 18px 64px !important; }
+  .k-section-title { font-size: 26px !important; }
+  .k-section-numeral { font-size: 48px !important; }
+  .k-cup-hero { width: 80vw !important; max-width: 320px !important; }
+  .k-cta-row { flex-direction: column !important; align-items: stretch !important; }
+  .k-cta-row > a { text-align: center !important; }
+  .k-foot-nav { flex-wrap: wrap !important; gap: 14px !important; }
+  .k-doanatomy-pre { font-size: 10px !important; }
+  .k-comparison-card { padding: 24px 20px !important; }
+}

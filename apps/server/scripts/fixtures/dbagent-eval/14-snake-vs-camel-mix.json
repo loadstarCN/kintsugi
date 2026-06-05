@@ -1,0 +1,84 @@
+{
+  "name": "14-snake-vs-camel-mix",
+  "_notes": "同一库里 snake_case + camelCase 混用，规则层都能命中。",
+  "snapshot": {
+    "dialect": "postgres",
+    "database": "biz",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "customer",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigserial",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "order_main",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigserial",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "customerId",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "order_line",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigserial",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "order_main_id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": [
+    {
+      "fromTable": "order_main",
+      "fromColumn": "customerId",
+      "toTable": "customer",
+      "toColumn": "id"
+    },
+    {
+      "fromTable": "order_line",
+      "fromColumn": "order_main_id",
+      "toTable": "order_main",
+      "toColumn": "id"
+    }
+  ]
+}

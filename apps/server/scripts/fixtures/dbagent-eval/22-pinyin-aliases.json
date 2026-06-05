@@ -1,0 +1,94 @@
+{
+  "name": "22-pinyin-aliases",
+  "snapshot": {
+    "dialect": "mysql",
+    "database": "shop_cn",
+    "scannedAt": "2026-04-15T00:00:00Z",
+    "tables": [
+      {
+        "name": "t_user",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "username",
+            "nativeType": "varchar(64)",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "product",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "name",
+            "nativeType": "varchar(128)",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "orders",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "yh_id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": false
+          },
+          {
+            "name": "cp_id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": false
+          },
+          {
+            "name": "amount",
+            "nativeType": "decimal(10,2)",
+            "logicalType": "number",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": [
+    { "fromTable": "orders", "fromColumn": "yh_id", "toTable": "t_user", "toColumn": "id" },
+    { "fromTable": "orders", "fromColumn": "cp_id", "toTable": "product", "toColumn": "id" }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@kintsugi/cli",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "bin": {
+    "kintsugi": "./bin/kintsugi.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@kintsugi/shared": "workspace:*",
+    "commander": "^12.1.0",
+    "openapi-typescript": "^7.4.4",
+    "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.0",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.2"
+  }
+}

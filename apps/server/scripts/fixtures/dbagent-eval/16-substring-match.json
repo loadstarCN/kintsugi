@@ -1,0 +1,56 @@
+{
+  "name": "16-substring-match",
+  "_notes": "复合命名：order_create_user_id → 应靠「列名包含 user 子串」匹配到 user 表。",
+  "snapshot": {
+    "dialect": "postgres",
+    "database": "biz",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "user",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigserial",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "order",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigserial",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "order_create_user_id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": [
+    {
+      "fromTable": "order",
+      "fromColumn": "order_create_user_id",
+      "toTable": "user",
+      "toColumn": "id"
+    }
+  ]
+}

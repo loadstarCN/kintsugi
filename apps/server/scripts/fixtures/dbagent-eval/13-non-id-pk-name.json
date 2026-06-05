@@ -1,0 +1,51 @@
+{
+  "name": "13-non-id-pk-name",
+  "_notes": "目标表 PK 不叫 id（叫 user_pk），FK 叫 user_id。规则层基于 table base 命中 user 表，自动跟到唯一 PK = user_pk。pk 名字怪不影响关系正确性，应当召回。",
+  "snapshot": {
+    "dialect": "mysql",
+    "database": "legacy",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "user",
+        "columns": [
+          {
+            "name": "user_pk",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "post",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "user_id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": [
+    { "fromTable": "post", "fromColumn": "user_id", "toTable": "user", "toColumn": "user_pk" }
+  ]
+}

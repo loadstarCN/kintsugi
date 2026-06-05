@@ -1,0 +1,49 @@
+{
+  "name": "10-incompatible-types",
+  "_notes": "类型不兼容的列名碰撞应该不被推为 FK（user_id 是 string 但 user.id 是 bigint）。",
+  "snapshot": {
+    "dialect": "mysql",
+    "database": "biz",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "user",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "external_event",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "user_id",
+            "nativeType": "varchar(64)",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": []
+}

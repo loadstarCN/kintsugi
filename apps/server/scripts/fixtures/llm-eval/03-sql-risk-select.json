@@ -1,0 +1,15 @@
+{
+  "name": "03-sql-risk-select",
+  "task": "sql-risk",
+  "messages": [
+    {
+      "role": "system",
+      "content": "判断用户给的 SQL 风险等级。输出 JSON：{\"riskLevel\": \"low|medium|high|critical\", \"reason\": string}。只输出 JSON。"
+    },
+    { "role": "user", "content": "SELECT id, name FROM goods WHERE app_code='x' LIMIT 100" }
+  ],
+  "expected": {
+    "jsonShape": { "riskLevel": "low|medium" }
+  },
+  "mockResponse": "{\"riskLevel\":\"low\",\"reason\":\"只读 + LIMIT\"}"
+}

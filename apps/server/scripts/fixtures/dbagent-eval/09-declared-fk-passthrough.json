@@ -1,0 +1,55 @@
+{
+  "name": "09-declared-fk-passthrough",
+  "_notes": "已声明的 FK 不在候选集（规则层只产候选；声明 FK 是 ground truth）。这条 expected=[] 验证我们不重复产候选。",
+  "snapshot": {
+    "dialect": "postgres",
+    "database": "biz",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "user",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigserial",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "session",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigserial",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "user_id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": [
+          {
+            "name": "session_user_fk",
+            "columns": ["user_id"],
+            "references": { "table": "user", "columns": ["id"] }
+          }
+        ]
+      }
+    ]
+  },
+  "expected": []
+}

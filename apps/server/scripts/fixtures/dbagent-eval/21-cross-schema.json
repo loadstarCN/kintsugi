@@ -1,0 +1,67 @@
+{
+  "name": "21-cross-schema",
+  "_notes": "PG 跨 schema：auth.user.id ← public.profile.user_id。规则层应当跨 schema 命中（base 名匹配）。",
+  "snapshot": {
+    "dialect": "postgres",
+    "database": "biz",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "user",
+        "schema": "auth",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "email",
+            "nativeType": "text",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "profile",
+        "schema": "public",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "user_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": [
+    {
+      "fromSchema": "public",
+      "fromTable": "profile",
+      "fromColumn": "user_id",
+      "toSchema": "auth",
+      "toTable": "user",
+      "toColumn": "id"
+    }
+  ]
+}

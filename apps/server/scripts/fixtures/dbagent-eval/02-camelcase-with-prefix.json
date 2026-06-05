@@ -1,0 +1,69 @@
+{
+  "name": "02-camelcase-with-prefix",
+  "snapshot": {
+    "dialect": "postgres",
+    "database": "biz",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "t_customer",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigserial",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "fullName",
+            "nativeType": "text",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "t_invoice",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigserial",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "customerId",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": false
+          },
+          {
+            "name": "total",
+            "nativeType": "numeric(12,2)",
+            "logicalType": "number",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": [
+    {
+      "fromTable": "t_invoice",
+      "fromColumn": "customerId",
+      "toTable": "t_customer",
+      "toColumn": "id"
+    }
+  ]
+}

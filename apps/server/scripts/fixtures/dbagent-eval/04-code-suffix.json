@@ -1,0 +1,70 @@
+{
+  "name": "04-code-suffix",
+  "_notes": "FK uses _code suffix instead of _id; target's PK is also non-id (string code).",
+  "snapshot": {
+    "dialect": "postgres",
+    "database": "biz",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "country",
+        "columns": [
+          {
+            "name": "code",
+            "nativeType": "varchar(2)",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "name",
+            "nativeType": "varchar(64)",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "address",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigserial",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "country_code",
+            "nativeType": "varchar(2)",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false
+          },
+          {
+            "name": "line1",
+            "nativeType": "text",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": [
+    {
+      "fromTable": "address",
+      "fromColumn": "country_code",
+      "toTable": "country",
+      "toColumn": "code"
+    }
+  ]
+}

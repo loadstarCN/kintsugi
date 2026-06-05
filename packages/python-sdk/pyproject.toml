@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kintsugi-sdk"
+version = "0.1.0"
+description = "Official Kintsugi platform SDK for Python (sync + async)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Proprietary" }
+authors = [{ name = "Kintsugi" }]
+keywords = ["kintsugi", "sdk", "rest", "client"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Operating System :: OS Independent",
+  "License :: Other/Proprietary License",
+]
+dependencies = [
+  "httpx>=0.26",
+  "typing-extensions>=4.5; python_version<'3.11'",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7",
+  "pytest-asyncio>=0.23",
+  "respx>=0.21",
+  "ruff>=0.4",
+]
+
+[tool.setuptools]
+packages = ["kintsugi_sdk"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

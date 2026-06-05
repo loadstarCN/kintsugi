@@ -1,0 +1,51 @@
+{
+  "name": "15-deep-prefix-stripping",
+  "_notes": "多重前缀（sys_ + tbl_ + 数字版本号）。规则层只剥常见前缀，不处理版本号。",
+  "snapshot": {
+    "dialect": "mysql",
+    "database": "legacy",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "sys_user",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "sys_log",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "user_id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": [
+    { "fromTable": "sys_log", "fromColumn": "user_id", "toTable": "sys_user", "toColumn": "id" }
+  ]
+}

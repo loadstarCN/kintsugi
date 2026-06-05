@@ -1,0 +1,186 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '9.12.0'
+
+jobs:
+  dependency-review:
+    name: Dependency Review (PR)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Dependency Review
+        # GHAS（GitHub Advanced Security）在私有/未启用 dependency graph 的 repo 上跑会
+        # 直接 fail。我们用 pnpm audit job 兜底，dep-review 当作有则更好；continue-on-error
+        # 让它 fail 不阻塞 PR。开了 GHAS 后可以删这一行。
+        continue-on-error: true
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
+
+  typecheck-and-build:
+    name: Typecheck + build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter @kintsugi/server exec prisma generate
+
+      - name: Build all
+        run: |
+          touch .env
+          pnpm build
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Coverage (server) — gates against regression
+        run: pnpm --filter @kintsugi/server test:cov
+
+  audit:
+    name: pnpm audit (high+)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit (high+ severity fails)
+        run: pnpm audit --audit-level high --prod
+
+  spec-drift:
+    name: Platform OpenAPI snapshot drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter @kintsugi/server exec prisma generate
+
+      - name: Check buildPlatformSpec() vs checked-in snapshot
+        env:
+          # spec:check 不连 DB（脚本只导入 buildPlatformSpec 函数）；占位避免 dotenv 警告
+          METADATA_DATABASE_URL: 'postgresql://noop:noop@127.0.0.1:5432/noop?sslmode=disable'
+        run: |
+          touch .env
+          pnpm --filter @kintsugi/server spec:check
+
+      - name: Verify SDK generated types are also in sync
+        env:
+          METADATA_DATABASE_URL: 'postgresql://noop:noop@127.0.0.1:5432/noop?sslmode=disable'
+        # 跑 sdk:gen（无 server → 走 snapshot fallback）→ git diff 必须为空
+        run: |
+          pnpm --filter @kintsugi/sdk gen
+          if ! git diff --quiet -- packages/sdk/src/generated; then
+            echo "✗ generated/ out of sync with spec snapshot. Run pnpm --filter @kintsugi/sdk gen and commit." >&2
+            git --no-pager diff --stat -- packages/sdk/src/generated >&2
+            exit 1
+          fi
+          echo "✓ generated SDK types in sync"
+
+  dbagent-eval:
+    name: DBAgent eval (relation candidates)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter @kintsugi/server exec prisma generate
+
+      - name: Run DBAgent fixture eval
+        env:
+          # CI 不连真 DB；DB env 仅占位以避免 dotenv 抱怨
+          METADATA_DATABASE_URL: 'postgresql://noop:noop@127.0.0.1:5432/noop?sslmode=disable'
+          DBAGENT_EVAL_MIN_F1: '0.70'
+        run: |
+          touch .env
+          pnpm --filter @kintsugi/server dbagent:eval
+
+      - name: Run LLM offline eval (mock mode, no provider calls)
+        # mock 模式只回放 fixture.mockResponse 验 grader 逻辑；改 prompt 模板时
+        # 跑 --live 在本地手动；CI 永远不打 LLM 计费。
+        run: pnpm --filter @kintsugi/server llm:eval
+
+  semgrep:
+    name: Semgrep SAST
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - name: Run Semgrep
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: p/typescript p/javascript p/owasp-top-ten p/security-audit
+        continue-on-error: true

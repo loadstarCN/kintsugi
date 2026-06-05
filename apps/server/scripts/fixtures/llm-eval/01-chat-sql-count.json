@@ -1,0 +1,17 @@
+{
+  "name": "01-chat-sql-count",
+  "task": "chat-sql",
+  "messages": [
+    {
+      "role": "system",
+      "content": "你是 SQL 助手。把用户中文需求翻译为 PostgreSQL 查询。表 goods(id int pk, name text, price numeric, app_code text)。只输出 SQL，不要解释。"
+    },
+    { "role": "user", "content": "统计 app_code='shop' 的商品数量" }
+  ],
+  "expected": {
+    "mustContain": ["count", "goods", "shop"],
+    "mustNotContain": ["DROP", "TRUNCATE"],
+    "matchRegex": "/^\\s*SELECT/i"
+  },
+  "mockResponse": "SELECT count(*) FROM goods WHERE app_code='shop'"
+}

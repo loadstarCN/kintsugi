@@ -1,0 +1,89 @@
+{
+  "name": "08-junction-with-payload",
+  "_notes": "M:N 中间表带 payload 列；已被 round-7 junction-PK fix 覆盖。",
+  "snapshot": {
+    "dialect": "mysql",
+    "database": "shop",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "user",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "role",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "name",
+            "nativeType": "varchar(64)",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "user_role",
+        "columns": [
+          {
+            "name": "user_id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "role_id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 2
+          },
+          {
+            "name": "granted_at",
+            "nativeType": "timestamp",
+            "logicalType": "datetime",
+            "nullable": false,
+            "isAutoIncrement": false
+          },
+          {
+            "name": "granted_by",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": true,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": [
+    { "fromTable": "user_role", "fromColumn": "user_id", "toTable": "user", "toColumn": "id" },
+    { "fromTable": "user_role", "fromColumn": "role_id", "toTable": "role", "toColumn": "id" }
+  ]
+}

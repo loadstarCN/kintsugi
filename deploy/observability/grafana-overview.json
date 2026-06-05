@@ -1,0 +1,229 @@
+{
+  "title": "Kintsugi — Service Overview",
+  "uid": "kintsugi-overview",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "tags": ["kintsugi"],
+  "time": { "from": "now-1h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "constant",
+        "query": "kintsugi-server",
+        "current": { "value": "kintsugi-server", "text": "kintsugi-server" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Request rate (RPS) by endpoint",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (span_name) (rate(traces_spanmetrics_calls_total{service_name=\"$service\"}[1m]))",
+          "legendFormat": "{{span_name}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Error rate (5xx)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(traces_spanmetrics_calls_total{service_name=\"$service\", status_code=\"STATUS_CODE_ERROR\"}[1m])) / sum(rate(traces_spanmetrics_calls_total{service_name=\"$service\"}[1m]))",
+          "legendFormat": "error rate"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percentunit" } }
+    },
+    {
+      "id": 3,
+      "title": "Instant API latency P50/P95/P99",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_name=\"$service\", span_name=~\"POST /api/apps/.*/ds/.*\"}[1m])))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_name=\"$service\", span_name=~\"POST /api/apps/.*/ds/.*\"}[1m])))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_name=\"$service\", span_name=~\"POST /api/apps/.*/ds/.*\"}[1m])))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 4,
+      "title": "LLM endpoints latency P95/P99",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_name=\"$service\", span_name=~\"POST /api/(chats|apps/.*/reports|apps/.*/pages/generate)\"}[5m])))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(traces_spanmetrics_latency_bucket{service_name=\"$service\", span_name=~\"POST /api/(chats|apps/.*/reports|apps/.*/pages/generate)\"}[5m])))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 5,
+      "title": "Rate limit hits / sec",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (scope) (rate(kintsugi_rate_limit_hit_total{service_name=\"$service\"}[1m]))",
+          "legendFormat": "{{scope}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "DB client operation duration P95 (per system)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (db_system, le) (rate(db_client_operation_duration_seconds_bucket{service_name=\"$service\"}[1m])))",
+          "legendFormat": "{{db_system}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "id": 7,
+      "title": "Instant API calls / sec by action",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (action) (rate(kintsugi_dataset_call_total{service_name=\"$service\"}[1m]))",
+          "legendFormat": "{{action}}"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Chat / Page generation rate (success vs error)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (outcome) (rate(kintsugi_chat_ask_total{service_name=\"$service\"}[5m]))",
+          "legendFormat": "chat {{outcome}}"
+        },
+        {
+          "expr": "sum by (outcome) (rate(kintsugi_page_generated_total{service_name=\"$service\"}[5m]))",
+          "legendFormat": "page {{outcome}}"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "LLM token rate (prompt + completion)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "gridPos": { "x": 0, "y": 32, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (provider, kind) (rate(kintsugi_llm_token_total{service_name=\"$service\"}[5m]))",
+          "legendFormat": "{{provider}} / {{kind}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "tps" } }
+    },
+    {
+      "id": 10,
+      "title": "LLM call outcome distribution",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "gridPos": { "x": 12, "y": 32, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (provider, outcome) (rate(kintsugi_llm_call_total{service_name=\"$service\"}[5m]))",
+          "legendFormat": "{{provider}} / {{outcome}}"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Business-DB connections in flight",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "gridPos": { "x": 0, "y": 40, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (dialect) (kintsugi_db_conn_in_flight{service_name=\"$service\"})",
+          "legendFormat": "{{dialect}}"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Uncaught exceptions / sec",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "gridPos": { "x": 12, "y": 40, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (kind, code) (rate(kintsugi_uncaught_exception_total{service_name=\"$service\"}[5m]))",
+          "legendFormat": "{{kind}} {{code}}"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "BFF execution duration P95 (by app)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "gridPos": { "x": 0, "y": 48, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (app, le) (rate(kintsugi_bff_exec_duration_ms_bucket{service_name=\"$service\"}[5m])))",
+          "legendFormat": "{{app}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ms" } }
+    },
+    {
+      "id": 14,
+      "title": "Operational health snapshot",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "gridPos": { "x": 12, "y": 48, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "max(kintsugi_access_key_expiring_soon{service_name=\"$service\"})",
+          "legendFormat": "AccessKeys ≤7d expiry"
+        },
+        {
+          "expr": "max(kintsugi_inactive_user_count{service_name=\"$service\"})",
+          "legendFormat": "Users inactive ≥90d"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,263 @@
+{
+  "name": "18-large-schema",
+  "_notes": "10 张表的中等规模 schema：测试规则层不会因规模 O(n²) 扫描产生伪关系。",
+  "snapshot": {
+    "dialect": "postgres",
+    "database": "saas",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "tenant",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "user",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "tenant_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "team",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "tenant_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "team_member",
+        "columns": [
+          {
+            "name": "team_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "user_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 2
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "project",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "tenant_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false
+          },
+          {
+            "name": "owner_team_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": true,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "task",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "project_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false
+          },
+          {
+            "name": "assignee_user_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": true,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "comment",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "task_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false
+          },
+          {
+            "name": "author_user_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "attachment",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "task_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "tag",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "tenant_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "task_tag",
+        "columns": [
+          {
+            "name": "task_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "tag_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 2
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": [
+    { "fromTable": "user", "fromColumn": "tenant_id", "toTable": "tenant", "toColumn": "id" },
+    { "fromTable": "team", "fromColumn": "tenant_id", "toTable": "tenant", "toColumn": "id" },
+    { "fromTable": "team_member", "fromColumn": "team_id", "toTable": "team", "toColumn": "id" },
+    { "fromTable": "team_member", "fromColumn": "user_id", "toTable": "user", "toColumn": "id" },
+    { "fromTable": "project", "fromColumn": "tenant_id", "toTable": "tenant", "toColumn": "id" },
+    { "fromTable": "project", "fromColumn": "owner_team_id", "toTable": "team", "toColumn": "id" },
+    { "fromTable": "task", "fromColumn": "project_id", "toTable": "project", "toColumn": "id" },
+    { "fromTable": "task", "fromColumn": "assignee_user_id", "toTable": "user", "toColumn": "id" },
+    { "fromTable": "comment", "fromColumn": "task_id", "toTable": "task", "toColumn": "id" },
+    { "fromTable": "comment", "fromColumn": "author_user_id", "toTable": "user", "toColumn": "id" },
+    { "fromTable": "attachment", "fromColumn": "task_id", "toTable": "task", "toColumn": "id" },
+    { "fromTable": "tag", "fromColumn": "tenant_id", "toTable": "tenant", "toColumn": "id" },
+    { "fromTable": "task_tag", "fromColumn": "task_id", "toTable": "task", "toColumn": "id" },
+    { "fromTable": "task_tag", "fromColumn": "tag_id", "toTable": "tag", "toColumn": "id" }
+  ]
+}

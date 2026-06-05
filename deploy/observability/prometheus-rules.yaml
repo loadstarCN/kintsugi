@@ -1,0 +1,171 @@
+# Kintsugi Prometheus alerting rules
+# 应用前提：OTel collector 用 spanmetrics connector 把 trace 转成
+# `traces_spanmetrics_*` metrics 后送进 Prometheus；service.name 标签为 'kintsugi-server'。
+
+groups:
+  - name: kintsugi-availability
+    interval: 30s
+    rules:
+      # --- RPS / Error rate ---
+      - alert: KintsugiHighErrorRate5m
+        expr: |
+          sum(rate(traces_spanmetrics_calls_total{service_name="kintsugi-server", status_code="STATUS_CODE_ERROR"}[5m]))
+          /
+          sum(rate(traces_spanmetrics_calls_total{service_name="kintsugi-server"}[5m]))
+          > 0.02
+        for: 10m
+        labels:
+          severity: page
+          service: kintsugi-server
+        annotations:
+          summary: 'Kintsugi 5xx rate > 2% for 10m'
+          description: '查 traces 看是哪个 endpoint 在抛 5xx；常见根因：业务库连接断开、JWT cleanup 任务异常、LLM provider 失败'
+          runbook: 'deploy/observability/runbook.md#high-error-rate'
+
+      - alert: KintsugiHighErrorRate30d
+        expr: |
+          sum(rate(traces_spanmetrics_calls_total{service_name="kintsugi-server", status_code="STATUS_CODE_ERROR"}[30d]))
+          /
+          sum(rate(traces_spanmetrics_calls_total{service_name="kintsugi-server"}[30d]))
+          > 0.005
+        for: 30m
+        labels:
+          severity: ticket
+          slo: error-rate
+        annotations:
+          summary: 'Kintsugi error rate burning 30d budget'
+
+      # --- Latency ---
+      - alert: KintsugiInstantApiP99High
+        expr: |
+          histogram_quantile(0.99,
+            sum by (le) (rate(traces_spanmetrics_latency_bucket{
+              service_name="kintsugi-server",
+              span_name=~"POST /api/apps/.*/ds/.*"
+            }[5m]))
+          ) > 0.5
+        for: 10m
+        labels:
+          severity: page
+          slo: instant-api-p99
+        annotations:
+          summary: 'Instant API p99 > 500ms'
+          description: '通常是业务库 N+1 / 没走索引；先看 pg_stat_statements'
+
+      - alert: KintsugiLlmEndpointP99High
+        expr: |
+          histogram_quantile(0.99,
+            sum by (le) (rate(traces_spanmetrics_latency_bucket{
+              service_name="kintsugi-server",
+              span_name=~"POST /api/(chats|apps/.*/reports|apps/.*/pages/generate)"
+            }[10m]))
+          ) > 15
+        for: 15m
+        labels:
+          severity: ticket
+          slo: llm-p99
+        annotations:
+          summary: 'LLM-backed endpoints p99 > 15s'
+
+  - name: kintsugi-rate-limit
+    interval: 1m
+    rules:
+      # 自定义指标 kintsugi_rate_limit_hit_total（埋点见 observability/README.md）
+      - alert: KintsugiRateLimitFloodAi
+        expr: |
+          sum(rate(kintsugi_rate_limit_hit_total{scope=~"ai-.*"}[5m])) > 1
+        for: 5m
+        labels:
+          severity: ticket
+        annotations:
+          summary: 'AI endpoint rate limit being hit > 60/min'
+          description: '正常使用极少触发；通常是某个租户写了死循环或被刷'
+
+      - alert: KintsugiRateLimitFloodLogin
+        expr: |
+          sum(rate(kintsugi_rate_limit_hit_total{scope="login"}[5m])) > 5
+        for: 2m
+        labels:
+          severity: ticket
+        annotations:
+          summary: 'Login throttle hit > 300/min — possible password spray'
+
+  - name: kintsugi-app-errors
+    interval: 1m
+    rules:
+      - alert: KintsugiUncaughtExceptionSpike
+        expr: |
+          sum(rate(kintsugi_uncaught_exception_total[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: 'Server raising > 30 uncaught exceptions/min'
+          description: 'Look at AllExceptionsFilter / KintsugiErrorFilter logs; usually indicates a regression in a hot path.'
+
+      - alert: KintsugiLlmCallErrorRate
+        expr: |
+          sum(rate(kintsugi_llm_call_total{outcome=~"error|timeout"}[5m]))
+          /
+          (sum(rate(kintsugi_llm_call_total[5m])) > 0.1)
+          > 0.10
+        for: 10m
+        labels:
+          severity: ticket
+          slo: llm-error-rate
+        annotations:
+          summary: 'LLM call error/timeout > 10% sustained'
+          description: 'Provider degraded. Consider failover env (LLM_FALLBACK_*) or pause AI features.'
+
+      - alert: KintsugiLlmFailoverActive
+        expr: |
+          sum(rate(kintsugi_llm_call_total{outcome="failover_to_secondary"}[15m])) > 0.05
+        for: 15m
+        labels:
+          severity: ticket
+        annotations:
+          summary: 'LLM primary provider is regularly being failed-over (>3/min)'
+
+      - alert: KintsugiAuditWriteFailures
+        expr: |
+          sum(rate(kintsugi_audit_write_fail_total[10m])) > 0.05
+        for: 10m
+        labels:
+          severity: ticket
+        annotations:
+          summary: 'Audit log writes failing — compliance gap if sustained'
+          description: 'Likely DB connectivity / disk; failed writes lose evidence.'
+
+  - name: kintsugi-housekeeping
+    interval: 6h
+    rules:
+      - alert: KintsugiAccessKeysExpiringSoon
+        expr: |
+          max(kintsugi_access_key_expiring_soon) > 0
+        for: 1h
+        labels:
+          severity: ticket
+        annotations:
+          summary: '{{ $value }} AccessKey(s) expiring within 7 days'
+          description: 'Run `pnpm --filter @kintsugi/server prisma:studio` to inspect; rotate before expiry to avoid 401.'
+
+      - alert: KintsugiBusinessDbConnLeak
+        expr: |
+          sum(kintsugi_db_conn_in_flight) > 50
+        for: 10m
+        labels:
+          severity: ticket
+        annotations:
+          summary: 'Business-DB connections in flight > 50 sustained — likely leak'
+          description: "openAdapter wraps close() with idempotent decrement; high steady-state count means callers aren't releasing. Grep for adapter.close() missing in finally blocks."
+
+  - name: kintsugi-liveness
+    interval: 30s
+    rules:
+      - alert: KintsugiServerDown
+        expr: up{job="kintsugi-server"} == 0
+        for: 2m
+        labels:
+          severity: page
+        annotations:
+          summary: 'kintsugi-server scrape down'

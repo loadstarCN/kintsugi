@@ -1,0 +1,48 @@
+{
+  "name": "05-self-reference",
+  "_notes": "Org tree pattern: user.parent_id → user.id (self-reference).",
+  "snapshot": {
+    "dialect": "mysql",
+    "database": "biz",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "department",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "parent_id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": true,
+            "isAutoIncrement": false
+          },
+          {
+            "name": "name",
+            "nativeType": "varchar(64)",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": [
+    {
+      "fromTable": "department",
+      "fromColumn": "parent_id",
+      "toTable": "department",
+      "toColumn": "id"
+    }
+  ]
+}

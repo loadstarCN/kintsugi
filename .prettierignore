@@ -1,0 +1,15 @@
+# 自动生成的文件 —— prettier reformat 会跟生成器打架，反复 diff
+apps/docs/docs/reference/api.md
+packages/sdk/spec/openapi.platform.json
+packages/sdk/src/generated/
+
+# 构建产物
+**/dist/
+**/.vitepress/dist/
+**/.vitepress/.temp/
+**/.vitepress/cache/
+node_modules/
+coverage/
+
+# lock
+pnpm-lock.yaml

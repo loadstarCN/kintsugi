@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": false,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@kintsugi/shared": ["packages/shared/src/index.ts"],
+      "@kintsugi/shared/*": ["packages/shared/src/*"],
+      "@kintsugi/db-scanner": ["packages/db-scanner/src/index.ts"],
+      "@kintsugi/db-scanner/*": ["packages/db-scanner/src/*"],
+      "@kintsugi/llm": ["packages/llm/src/index.ts"],
+      "@kintsugi/llm/*": ["packages/llm/src/*"],
+      "@kintsugi/sdk": ["packages/sdk/src/index.ts"],
+      "@kintsugi/sdk/*": ["packages/sdk/src/*"]
+    }
+  }
+}

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Kintsugi SDK 需要访问网络向 /api/* 发 HTTP -->
+  <uses-permission android:name="android.permission.INTERNET" />
+</manifest>

@@ -1,0 +1,11 @@
+{
+  "name": "20-empty-schema",
+  "_notes": "退化 case：空 schema 不应崩。expected=[]，count=0。",
+  "snapshot": {
+    "dialect": "postgres",
+    "database": "empty",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": []
+  },
+  "expected": []
+}

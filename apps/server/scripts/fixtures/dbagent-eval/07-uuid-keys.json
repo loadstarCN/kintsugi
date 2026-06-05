@@ -1,0 +1,58 @@
+{
+  "name": "07-uuid-keys",
+  "_notes": "PG uuid type used as PK + FK. logicalType=uuid; STR_SET 兼容.",
+  "snapshot": {
+    "dialect": "postgres",
+    "database": "biz",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "tenant",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "name",
+            "nativeType": "text",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "project",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "tenant_id",
+            "nativeType": "uuid",
+            "logicalType": "uuid",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": [
+    { "fromTable": "project", "fromColumn": "tenant_id", "toTable": "tenant", "toColumn": "id" }
+  ]
+}

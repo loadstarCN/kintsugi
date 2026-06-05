@@ -1,0 +1,553 @@
+// =========================================================================
+// Kintsugi 平台元数据库 Schema（Postgres / 远端托管 PostgreSQL）
+//
+// 这里只放"平台自身"的元数据；客户业务数据库由 DataSource 记录指向，
+// 通过 @kintsugi/db-scanner 按 dialect 连入。
+// =========================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("METADATA_DATABASE_URL")
+}
+
+// ----------------------- 枚举 -----------------------
+
+enum Edition {
+  /// 试用：限期 + 限功能；trialExpiresAt 过期后所有付费 endpoint 拒绝
+  TRIAL
+  PRO
+  ENTERPRISE
+}
+
+enum TrialStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// 升级请求状态机。客户在 /billing 提交 → admin 审批 → 通过则 tenant 升级。
+enum UpgradeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Environment {
+  production
+  daily
+  development
+}
+
+enum DialectId {
+  postgres
+  mysql
+  mssql
+  oracle
+  sqlite
+  mariadb
+  tidb
+}
+
+enum PageType {
+  KintsugiPage
+  KintsugiSearch
+  KintsugiChats
+  KintsugiReport
+  List
+  Form
+  Dashboard
+  ReactSubApp
+}
+
+enum BffScriptType {
+  BEFORE_HOOK
+  AFTER_HOOK
+  ENDPOINT
+  PUBLIC_FUNCTION
+}
+
+enum ScanStatus {
+  pending
+  scanning
+  succeeded
+  failed
+}
+
+// ----------------------- 租户 / 用户 / 权限 -----------------------
+
+model Tenant {
+  tenantCode String   @id
+  tenantName String
+  edition    Edition  @default(PRO)
+  aiCredits  Decimal  @default(0) @db.Decimal(18, 4)
+  /// 配额上限：null = 不限。null 优先于 env 默认值。
+  /// 三档边界：DataSource / Dataset / 每天 LLM 调用总数。
+  maxDataSources Int?
+  maxDatasets    Int?
+  maxDailyLlmCalls Int?
+  /// 试用账户到期时间。null = 非试用（不会过期）；非 null 且 < now → 拒绝付费 endpoint。
+  /// edition=TRIAL 时一般非空；edition=PRO/ENTERPRISE 时此字段被忽略。
+  trialExpiresAt DateTime?
+  /// 试用即将过期通知发出的时间戳。null = 还没发；非 null 表示已发，scheduler 不会重复发。
+  trialExpiringNotifiedAt DateTime?
+  /// 试用已过期通知发出的时间戳。同上，单次去重。
+  trialExpiredNotifiedAt  DateTime?
+  /// 当前付费套餐代码（plans.ts 里的 code，例如 pro_yearly）。null = 试用 / 未订阅 / 已过期。
+  currentPlanCode    String?
+  /// 付费订阅到期时间（PRO / ENTERPRISE）。null = 试用 / 未订阅。
+  /// edition=TRIAL 时此字段被忽略（试用走 trialExpiresAt）；其他 edition 时
+  /// 非 null 且 < now → 拒绝登录（与试用过期同款行为）。
+  subscriptionExpiresAt DateTime?
+  /// 自动续费开关（仅供 UI / 提醒决策，不强制实际扣款 —— 平台此版本是手动审批续费）
+  autoRenew           Boolean   @default(false)
+  /// 付费订阅即将过期通知去重时间戳；下个 billing cycle 重设为 null
+  subscriptionExpiringNotifiedAt DateTime?
+  /// 付费订阅已过期通知去重时间戳；下个 billing cycle 重设为 null
+  subscriptionExpiredNotifiedAt  DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  users        User[]
+  applications Application[]
+  auditLogs    AuditLog[]
+  creditTxs    AiCreditTx[]
+  upgradeRequests UpgradeRequest[]
+}
+
+model User {
+  id         String   @id @default(cuid())
+  tenantCode String
+  username   String
+  email      String?
+  phone      String?
+  department String?
+  passwordHash String
+  /// 失败登录计数 + 上次失败时间。窗口内累积到阈值 → 设 lockedUntil。
+  /// 登录成功时清零。
+  failedLoginCount Int      @default(0)
+  lastFailedLoginAt DateTime?
+  /// user-level lockout：>now 时拒绝登录，不论密码对错。
+  lockedUntil DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant Tenant      @relation(fields: [tenantCode], references: [tenantCode], onDelete: Cascade)
+  roles  UserRole[]
+
+  @@unique([tenantCode, username])
+  @@index([tenantCode])
+}
+
+model Role {
+  id         String   @id @default(cuid())
+  tenantCode String
+  appCode    String?
+  name       String
+  description String?
+  permissions Json     @default("{}")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  users UserRole[]
+
+  @@unique([tenantCode, appCode, name])
+}
+
+model UserRole {
+  userId String
+  roleId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+// ----------------------- 应用与数据源 -----------------------
+
+model Application {
+  appCode     String       @id
+  tenantCode  String
+  name        String
+  description String?
+  environment Environment  @default(development)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  tenant     Tenant       @relation(fields: [tenantCode], references: [tenantCode], onDelete: Cascade)
+  dataSources DataSource[]
+  datasets   Dataset[]
+  pages      Page[]
+  menus      Menu[]
+  bffScripts BffScript[]
+  customSqls CustomSql[]
+  accessKeys AccessKey[]
+  webhookSubs WebhookSub[]
+
+  @@index([tenantCode])
+}
+
+/// 客户业务数据库（非平台元数据库）
+model DataSource {
+  id            String    @id @default(cuid())
+  appCode       String
+  dialect       DialectId
+  displayName   String
+  host          String
+  port          Int
+  /// 用户连接的数据库名 (MySQL 的 database / PG 的 database)
+  database      String
+  /// PG 用 schema；其他方言可忽略
+  schema        String?
+  username      String
+  /// 加密存储（AES-GCM + 环境变量 master key），不直接明文
+  passwordCiphertext String
+  sslMode       String?
+  extraParams   Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastScanAt    DateTime?
+  lastScanStatus ScanStatus @default(pending)
+
+  application Application @relation(fields: [appCode], references: [appCode], onDelete: Cascade)
+  datasets    Dataset[]
+  scanJobs    ScanJob[]
+
+  @@index([appCode])
+}
+
+/// 每次 DBAgent 扫描的记录（可重放、可比对）
+model ScanJob {
+  id             String     @id @default(cuid())
+  dataSourceId   String
+  status         ScanStatus @default(pending)
+  startedAt      DateTime   @default(now())
+  finishedAt     DateTime?
+  /// 原始 SchemaSnapshot JSON
+  rawSnapshot    Json?
+  /// LLM 归纳的 ER 图 / 语义分析结果
+  inferredModel  Json?
+  errorMessage   String?
+  tokensUsed     Int?
+
+  dataSource DataSource @relation(fields: [dataSourceId], references: [id], onDelete: Cascade)
+
+  @@index([dataSourceId])
+}
+
+// ----------------------- Dataset / DO / 关系 -----------------------
+
+model Dataset {
+  datasetCode String   @id
+  appCode     String
+  dataSourceId String
+  schemaName  String?
+  tableName   String
+  alias       String
+  /// DO JSON（字段、枚举、显示语义等）
+  doJson      Json
+  version     Int      @default(1)
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastModifiedBy String?
+
+  application Application @relation(fields: [appCode], references: [appCode], onDelete: Cascade)
+  dataSource  DataSource  @relation(fields: [dataSourceId], references: [id], onDelete: Cascade)
+
+  @@unique([appCode, dataSourceId, tableName])
+  @@index([appCode])
+}
+
+// ----------------------- 页面 / 菜单 -----------------------
+
+model Page {
+  id          String   @id @default(cuid())
+  appCode     String
+  type        PageType
+  name        String
+  routePath   String
+  configJson  Json
+  status      String   @default("draft") /// draft | published
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  application Application @relation(fields: [appCode], references: [appCode], onDelete: Cascade)
+  reactSubApp ReactSubApp?
+
+  @@index([appCode])
+}
+
+model ReactSubApp {
+  id           String   @id @default(cuid())
+  pageId       String   @unique
+  sourceFiles  Json     /// { "src/app/index.jsx": "...", ... }
+  publishedVersion Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+}
+
+model Menu {
+  id         String   @id @default(cuid())
+  appCode    String   @unique
+  tree       Json
+  updatedAt  DateTime @updatedAt
+
+  application Application @relation(fields: [appCode], references: [appCode], onDelete: Cascade)
+}
+
+// ----------------------- BFF / SQL -----------------------
+
+model BffScript {
+  id             String        @id @default(cuid())
+  appCode        String
+  scriptName     String
+  type           BffScriptType
+  boundDataset   String?       /// 仅 hooks 用；引用 Dataset.datasetCode
+  code           String
+  version        Int           @default(1)
+  lastSubmitter  String?
+  lastSubmittedAt DateTime     @default(now())
+  createdAt      DateTime      @default(now())
+
+  application Application @relation(fields: [appCode], references: [appCode], onDelete: Cascade)
+
+  @@unique([appCode, scriptName])
+  @@index([appCode])
+}
+
+model CustomSql {
+  sqlCode        String   @id
+  appCode        String
+  dataSourceId   String
+  sqlName        String
+  content        String
+  paramsSchema   Json?
+  lastSubmitter  String?
+  lastSubmittedAt DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  application Application @relation(fields: [appCode], references: [appCode], onDelete: Cascade)
+
+  @@unique([appCode, sqlName])
+  @@index([appCode])
+}
+
+// ----------------------- 出向 Webhook -----------------------
+
+/// 出向 webhook 订阅。租户级配置，按 appCode + event 分发。
+/// 派发是 best-effort：失败 warn-log + WebhookDelivery 表里写 attempt 记录。
+/// 当前不做异步队列；后续要 at-least-once 再上 BullMQ + retry。
+model WebhookSub {
+  id          String   @id @default(cuid())
+  appCode     String
+  url         String
+  /// HMAC-SHA256 签名用密钥（明文走不行；AES-GCM via crypto.encrypt 落库）
+  secretCipher String
+  /// 订阅哪些事件名。常用：dataset.created / dataset.updated / dataset.deleted /
+  /// scan.succeeded。空数组 = 不订阅任何（等同停用）。
+  events      String[]
+  description String?
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  application Application @relation(fields: [appCode], references: [appCode], onDelete: Cascade)
+  deliveries  WebhookDelivery[]
+
+  @@index([appCode])
+}
+
+/// 单次派发任务的状态机，承载重试 + DLQ：
+///   pending → success            (一次成功)
+///   pending → pending(attempts++) (失败，未达上限)
+///   pending → dead_lettered       (失败 5 次)
+///
+/// nextAttemptAt 是调度依据；SchedulerService 每 tick 取 nextAttemptAt < now
+/// 且 status=pending 的批量重发。指数退避：1m / 5m / 30m / 2h / 12h。
+///
+/// payload 落库以便重试时不需要 caller 提供——dispatch 时一次写完，重试只读。
+model WebhookDelivery {
+  id        String   @id @default(cuid())
+  subId     String
+  event     String
+  /// 投递状态：pending / success / dead_lettered
+  status     String   @default("pending")
+  /// 已尝试次数（含本次）
+  attempts   Int      @default(0)
+  /// 下次尝试时间；null = 不再尝试（success / dead_lettered）
+  nextAttemptAt DateTime?
+  /// 待发送 payload（HMAC 签名重算，避免 secret 离线落进 DB）
+  payloadJson Json
+  /// 最近一次的 HTTP status；网络错误 = 0；从未尝试 = null
+  lastHttpStatus Int?
+  /// upstream 响应（前 1000 字符），最后一次的
+  lastResponse String?
+  lastErrorMsg String?
+  lastDurationMs Int?
+  /// 整体首次创建时间
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sub WebhookSub @relation(fields: [subId], references: [id], onDelete: Cascade)
+
+  @@index([subId, createdAt])
+  @@index([status, nextAttemptAt])
+}
+
+// ----------------------- 认证与审计 -----------------------
+
+model AccessKey {
+  accessKey      String   @id
+  appCode        String
+  /// AES-GCM 加密的 secretKey 明文（master key 来自 ENCRYPTION_KEY）。
+  /// 字段名沿用 secretKeyHash 是历史遗留——不要按字面"hash"理解，HMAC 验签需要原文。
+  secretKeyHash  String
+  /// 轮转期内的旧 secret，加密落库；validUntil 过后失效。轮转完成后清空。
+  prevSecretKeyHash String?
+  /// 旧 secret 的 grace 截止时间。null = 没有处于轮转中。
+  prevValidUntil DateTime?
+  /// 创建该 key 的 user（审计用，不参与运行态 user 上下文）。
+  createdBy      String?
+  /// 可选：把 key 绑给一个具体的 user。绑了之后 HMAC 路径会注入 kintsugi.user_id GUC，
+  /// scope=self 的 RLS policy 对这条 key 也生效。null = 系统级 key，仅 tenant scope。
+  boundUserId    String?
+  expiresAt      DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime @default(now())
+
+  application Application @relation(fields: [appCode], references: [appCode], onDelete: Cascade)
+
+  @@index([appCode])
+  @@index([boundUserId])
+}
+
+/// HMAC 重放保护：每次成功验签后写入 (accessKey, nonce)；同一 nonce 在窗口内出现第二次即拒。
+/// 写多读少；以 (accessKey, nonce) 为主键。expiresAt 让惰性 / 定时 cleanup 删掉过期项。
+/// 5 分钟时间窗的 5 倍 (= 25 min) 之外才会被清，给跨机时钟漂移留一点冗余。
+model AccessKeyNonce {
+  accessKey String
+  nonce     String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@id([accessKey, nonce])
+  @@index([expiresAt])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  tenantCode   String
+  appCode      String?
+  userId       String?
+  /// HMAC 路径写入：触发本条审计的 access key（用首列存而非藏在 afterJson，
+  /// 这样按 key 查 / 撤销后回溯可走索引）。JWT 路径恒为 null。
+  accessKey    String?
+  action       String
+  targetType   String
+  targetId     String?
+  beforeJson   Json?
+  afterJson    Json?
+  traceparent  String?
+  createdAt    DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantCode], references: [tenantCode], onDelete: Cascade)
+
+  @@index([tenantCode, createdAt])
+  @@index([accessKey])
+}
+
+model AiCreditTx {
+  id         String   @id @default(cuid())
+  tenantCode String
+  delta      Decimal  @db.Decimal(18, 4) /// 正数 = 充值；负数 = 消耗
+  reason     String   /// dbAgent | textToPage | chat | mcp | manual
+  meta       Json?
+  createdAt  DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantCode], references: [tenantCode], onDelete: Cascade)
+
+  @@index([tenantCode, createdAt])
+}
+
+/// 已被撤销的 JWT（按 jti）。
+/// logout 时写入；verify 时检查；启动 + 惰性 cleanup 把 expiresAt < now 的删掉。
+/// 写少读多，主键 jti。
+model JwtRevocation {
+  jti       String   @id
+  userId    String?
+  revokedAt DateTime @default(now())
+  /// 用 token payload 的 exp 字段；过这时间可清
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
+/// 试用申请。公开 POST /api/trial/apply 写入；admin 审批通过 → 自动建 TRIAL Tenant + 首位 admin User。
+/// 关闭公开 register 后，新租户唯一入口就是这条 + 平台方 /api/admin/tenants 直建。
+model TrialApplication {
+  id           String      @id @default(cuid())
+  /// 联系人姓名
+  contactName  String
+  email        String
+  phone        String?
+  company      String?
+  /// 用户描述拟用场景
+  useCase      String?
+  status       TrialStatus @default(PENDING)
+  /// approve 时记录建出来的 tenantCode（一对一）
+  approvedTenantCode String?
+  /// 审核者 user.id；reject 时也记。
+  reviewedBy   String?
+  /// 审核备注（reject reason / approve note）
+  reviewNote   String?
+  createdAt    DateTime    @default(now())
+  reviewedAt   DateTime?
+
+  @@index([status, createdAt])
+  @@index([email])
+}
+
+/// 升级 / 续费请求。租户用户在 /billing 页面 POST /api/billing/upgrade-request；
+/// admin 在 /api/admin/upgrade-requests/:id/approve 通过后：
+///   - tenant.edition 改成 plan.edition (PRO / ENTERPRISE)
+///   - tenant.currentPlanCode 改成 plan.code
+///   - tenant.subscriptionExpiresAt 设到 NOW + requestedDurationMonths 月
+///   - tenant.aiCredits 加 plan.monthlyAiCreditYuan × duration
+///   - 通知去重字段重置（下次到期再发提醒）
+///
+/// 续费 = 同 tenant 重新提一条 upgrade-request，approve 后 expiresAt 在原值或 NOW
+/// 中较大者上加 duration 月（不会因为提前续费白扔时间）。
+model UpgradeRequest {
+  id                       String                @id @default(cuid())
+  tenantCode               String
+  /// plans.ts 里某个 plan 的 code，例如 pro_yearly
+  requestedPlanCode        String
+  /// 想续 / 升级几个月（plan 月套餐 = 1 / 12 / 24 等）
+  requestedDurationMonths  Int
+  /// 联系人 / 邮箱 / 电话；通过邮件回执用，不同于 tenant admin user
+  contactName              String
+  contactEmail             String
+  phone                    String?
+  /// 用户备注（特殊需求 / 折扣码 等）
+  note                     String?
+  status                   UpgradeRequestStatus  @default(PENDING)
+  reviewedBy               String?
+  reviewNote               String?
+  reviewedAt               DateTime?
+  /// approve 时落库当时计算出的新 expiresAt，方便审计 / 邮件正文
+  approvedExpiresAt        DateTime?
+  createdAt                DateTime              @default(now())
+
+  tenant Tenant @relation(fields: [tenantCode], references: [tenantCode], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([tenantCode, status])
+}

@@ -1,0 +1,92 @@
+node_modules/
+dist/
+build/
+# 但是发布的 SDK 二进制要进库（服务端 /api/sdk/android/kintsugi.aar 直接 stream）
+!packages/mobile-sdk/dist/
+!packages/mobile-sdk/dist/**
+.turbo/
+.next/
+coverage/
+*.log
+# VitePress dev cache
+.vitepress/cache/
+.vitepress/dist/
+# Python / Java / Go build artifacts
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+.venv/
+target/
+.DS_Store
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ide
+.vscode/
+.idea/
+
+# prisma
+prisma/migrations/**/*.sql.tmp
+
+# extracted Feishu docs are research material, keep them
+# docs/ intentionally tracked
+
+# local scanner test sqlite files
+*.sqlite
+*.sqlite3
+*.db
+
+# playwright test artifacts from earlier research
+.playwright-mcp/
+
+# Android / Gradle 构建产物（保留 dist/android 下的发布 AAR）
+packages/mobile-sdk/android/.gradle/
+packages/mobile-sdk/android/.kotlin/
+packages/mobile-sdk/android/local.properties
+packages/mobile-sdk/android/**/build/
+packages/mobile-sdk/android/**/.cxx/
+
+# iOS / Swift 构建产物
+packages/mobile-sdk/ios/.build/
+packages/mobile-sdk/ios/DerivedData/
+packages/mobile-sdk/ios/**/Package.resolved
+
+# macOS / 编辑器小垃圾
+.DS_Store
+Thumbs.db
+
+# 临时调试 / 私密草稿
+*.local
+*.tmp
+*.swp
+
+# TypeScript 增量构建缓存
+*.tsbuildinfo
+
+# Claude Code 本地配置（个人 / 主机相关，不入库）
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+
+# JetBrains / VS Code 工程文件
+.idea/
+*.iml
+.vscode/
+
+# server 本地诊断 / 输出
+apps/server/dist/
+apps/server/coverage/
+apps/server/*.log
+
+# web 构建输出
+apps/web/dist/
+apps/web/.vite/
+
+# Prisma 生成产物（保留 schema，忽略 client 包内生成）
+node_modules/.prisma/
+node_modules/@prisma/client/
+
+# 测试截图（playwright 临时产出）
+*.png

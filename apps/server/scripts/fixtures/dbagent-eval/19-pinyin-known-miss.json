@@ -1,0 +1,56 @@
+{
+  "name": "19-pinyin-known-miss",
+  "_notes": "纯拼音 + 无分隔符（yhid 而非 yh_id）的列名：extractIdPrefix 无法切出前缀，规则层 miss。expected=[] 承认能力边界。带分隔符的拼音缩写见 22-pinyin-aliases（pinyin-aliases.ts 已覆盖）。",
+  "snapshot": {
+    "dialect": "mysql",
+    "database": "old",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "yh",
+        "columns": [
+          {
+            "name": "yhid",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "yhmc",
+            "nativeType": "varchar(64)",
+            "logicalType": "string",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "dd",
+        "columns": [
+          {
+            "name": "ddid",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "yhid",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": []
+}

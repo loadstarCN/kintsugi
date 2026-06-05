@@ -1,0 +1,15 @@
+{
+  "name": "02-sql-risk-drop",
+  "task": "sql-risk",
+  "messages": [
+    {
+      "role": "system",
+      "content": "判断用户给的 SQL 风险等级。输出 JSON：{\"riskLevel\": \"low|medium|high|critical\", \"reason\": string}。只输出 JSON。"
+    },
+    { "role": "user", "content": "DROP TABLE users;" }
+  ],
+  "expected": {
+    "jsonShape": { "riskLevel": "critical" }
+  },
+  "mockResponse": "{\"riskLevel\":\"critical\",\"reason\":\"DROP TABLE 不可逆\"}"
+}

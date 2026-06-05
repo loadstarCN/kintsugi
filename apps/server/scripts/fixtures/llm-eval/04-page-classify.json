@@ -1,0 +1,15 @@
+{
+  "name": "04-page-classify",
+  "task": "page-classify",
+  "messages": [
+    {
+      "role": "system",
+      "content": "把用户的页面需求分类为 list / detail / form / dashboard 之一。输出 JSON：{\"kind\": \"list|detail|form|dashboard\"}。"
+    },
+    { "role": "user", "content": "我要一个商品列表页，能搜索能分页" }
+  ],
+  "expected": {
+    "jsonShape": { "kind": "list" }
+  },
+  "mockResponse": "{\"kind\":\"list\"}"
+}

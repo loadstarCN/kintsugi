@@ -1,0 +1,51 @@
+{
+  "name": "17-int-bigint-compat",
+  "_notes": "bigint PK + int FK：integer/bigint 在 INT_SET 内兼容。",
+  "snapshot": {
+    "dialect": "mysql",
+    "database": "biz",
+    "scannedAt": "2026-04-01T00:00:00Z",
+    "tables": [
+      {
+        "name": "category",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "bigint",
+            "logicalType": "bigint",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      },
+      {
+        "name": "product",
+        "columns": [
+          {
+            "name": "id",
+            "nativeType": "int",
+            "logicalType": "integer",
+            "nullable": false,
+            "isAutoIncrement": true,
+            "primaryKeyOrder": 1
+          },
+          {
+            "name": "category_id",
+            "nativeType": "int",
+            "logicalType": "integer",
+            "nullable": false,
+            "isAutoIncrement": false
+          }
+        ],
+        "indexes": [],
+        "foreignKeys": []
+      }
+    ]
+  },
+  "expected": [
+    { "fromTable": "product", "fromColumn": "category_id", "toTable": "category", "toColumn": "id" }
+  ]
+}

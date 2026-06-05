@@ -1,0 +1,12 @@
+{
+  "name": "@kintsugi/skills",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Skills 2.0 package for Kintsugi CLI / runtime agents",
+  "files": [
+    "skills/**/*"
+  ],
+  "scripts": {
+    "install-skill": "echo 'usage: npx skills add @kintsugi/skills'"
+  }
+}
